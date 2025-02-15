@@ -8,10 +8,17 @@ import { motion } from 'framer-motion'
 import { Star } from 'lucide-react'
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar'
 
+import Form from './Form'
+
 const Hero = () => {
     const avatars = [man, woman, boy]
+    const [formOpen, setFormOpen] = useState(false);
+
   return (
     <div className='flex flex-col justify-center w-full h-full min-h-screen bg-gradient-to-br from-purple-50 to-blue-50 px-4 md:px-8 lg:px-16'>
+        {formOpen && (
+            <Form setFormOpen={setFormOpen} formOpen={formOpen}/>
+        )}
     <div className='grid grid-cols-1 lg:grid-cols-2 gap-8 w-full max-w-7xl mx-auto items-center py-12'>
         <motion.div
             initial={{ opacity: 0, x: -100 }}
@@ -53,6 +60,7 @@ const Hero = () => {
             >
                 <Button 
                     className='bg-blue-600 hover:bg-blue-700 text-white px-8 py-4 rounded-xl text-lg font-semibold transition-all duration-300 hover:shadow-lg hover:-translate-y-1'
+                    onClick={() => setFormOpen(true)}
                 >
                     🚀 Start Referring Now
                 </Button>

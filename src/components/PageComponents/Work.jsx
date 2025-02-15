@@ -1,10 +1,12 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { motion } from 'framer-motion'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../ui/card'
 import { Button } from '../ui/button'
 import { UserPlus, Link, DollarSign} from 'lucide-react'
+import Form from './Form'
 
 function Work() {
+    const [formOpen, setFormOpen] = useState(false);
     const content = [
         {
             title: "Sign Up & Get Link",
@@ -28,6 +30,9 @@ function Work() {
     ]
   return (
     <div className='flex flex-col items-center justify-center h-full w-full py-16 px-4 bg-gradient-to-br from-purple-50 to-blue-50'>
+        {formOpen && (
+            <Form setFormOpen={setFormOpen} formOpen={formOpen}/>
+        )}
     <motion.div
         initial={{ opacity: 0, y: 20 }}
         whileInView={{ opacity: 1, y: 0 }}
@@ -106,6 +111,7 @@ function Work() {
     >
         <Button 
             className='bg-gradient-to-r from-purple-600 to-blue-600 text-white px-8 py-6 rounded-2xl text-lg font-semibold hover:shadow-xl hover:scale-105 transition-all duration-300'
+            onClick={() => setFormOpen(true)}
         >
             🚀 Start Earning Now
         </Button>

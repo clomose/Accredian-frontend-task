@@ -6,8 +6,7 @@ import { Textarea } from '../ui/textarea'
 import { Button } from '../ui/button'
 import { User, Mail, X, Send, CheckCircle } from 'lucide-react'
 
-const Form = () => {
-    const [isOpen, setIsOpen] = useState(true)
+const Form = ({setFormOpen, formOpen }) => {
     const [formData, setFormData] = useState({
         name: '',
         friendName: '',
@@ -55,16 +54,14 @@ const Form = () => {
         setErrors(prev => ({ ...prev, [name]: '' }))
     }
 
-    const handleClose = () => setIsOpen(false)
-
     return (
         <>
-            {isOpen && (
+            {formOpen && (
                 <motion.div
                     initial={{ opacity: 0, scale: 0.8 }}
                     animate={{ opacity: 1, scale: 1 }}
                     exit={{ opacity: 0, scale: 0.8 }}
-                    className='fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center p-4'
+                    className='fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center p-4 z-50'
                 >
                     <motion.form
                         initial={{ y: 50 }}
@@ -74,7 +71,7 @@ const Form = () => {
                     >
                         <button
                             type='button'
-                            onClick={handleClose}
+                            onClick={() => setFormOpen(false)}
                             className='absolute -top-3 -right-3 bg-white p-1.5 rounded-full shadow-lg hover:scale-110 transition-all'
                         >
                             <X className='w-6 h-6 text-purple-600' />
