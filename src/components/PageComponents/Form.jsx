@@ -5,6 +5,9 @@ import { Label } from '../ui/label'
 import { Textarea } from '../ui/textarea'
 import { Button } from '../ui/button'
 import { User, Mail, X, Send, CheckCircle } from 'lucide-react'
+import axios from 'axios'
+import toast  from 'react-hot-toast'
+
 
 const Form = ({setFormOpen, formOpen }) => {
     const [formData, setFormData] = useState({
@@ -17,20 +20,25 @@ const Form = ({setFormOpen, formOpen }) => {
     const [isSuccess, setIsSuccess] = useState(false)
     const [errors, setErrors] = useState({})
 
+    const isValidEmail = (email) => {
+        const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+        return emailRegex.test(email);
+    }
+
     const validateForm = () => {
         const newErrors = {}
         if (!formData.name.trim()) newErrors.name = 'Name is required'
         if (!formData.friendName.trim()) newErrors.friendName = "Friend's name is required"
         if (!formData.friendEmail.trim()) {
             newErrors.friendEmail = "Friend's email is required"
-        } else if (!/\S+@\S+\.\S+/.test(formData.friendEmail)) {
+        } else if (!isValidEmail(formData.friendEmail)) {
             newErrors.friendEmail = 'Invalid email format'
         }
         if (!formData.message.trim()) newErrors.message = 'Message is required'
         return newErrors
     }
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault()
         const validationErrors = validateForm()
         if (Object.keys(validationErrors).length > 0) {
@@ -39,13 +47,25 @@ const Form = ({setFormOpen, formOpen }) => {
         }
 
         setIsSubmitting(true)
-        // Simulate API call
-        setTimeout(() => {
-            setIsSubmitting(false)
-            setIsSuccess(true)
-            setFormData({ name: '', friendName: '', friendEmail: '', message: '' })
-            setErrors({})
-        }, 2000)
+        try {
+            const response = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/api/refer`, formData)
+            if (response.data.status === 201) {
+                setErrors({})
+                const response = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/api/refer/email`, formData)
+                if(response.data.status === 201){
+                    toast.success(response.data.message)
+                    setIsSubmitting(false)
+                    setIsSuccess(true)
+                    setFormData({ name: '', friendName: '', friendEmail: '', message: '' })
+                }else{
+                    toast.error(response.data.error)
+                }  
+            }else{
+                toast.error(response.data.error)
+            }
+        } catch (error) {
+            console.log(error)
+        }
     }
 
     const handleChange = (e) => {
@@ -85,10 +105,10 @@ const Form = ({setFormOpen, formOpen }) => {
                             >
                                 <CheckCircle className='w-16 h-16 text-green-500 mx-auto' />
                                 <h2 className='text-2xl font-bold text-gray-800'>
-                                    Referral Sent Successfully!
+                                    Referral Sent Successfully through the email!
                                 </h2>
                                 <p className='text-gray-600'>
-                                    Thank you for your referral. We'll contact your friend shortly.
+                                    Thank you for your referral. We'll get your reward soon.
                                 </p>
                             </motion.div>
                         ) : (
@@ -111,16 +131,16 @@ const Form = ({setFormOpen, formOpen }) => {
                                             className='space-y-2'
                                         >
                                             <Label className='text-gray-700 font-medium'>
-                                                {field === 'name' ? 'Your Name' : "Friend's Name"} *
+                                                {field === 'name' ? 'Your Name' : "Friend's Name"} <span className='text-red-600'>*</span>
                                             </Label>
                                             <div className='relative group'>
-                                                <User className='w-5 h-5 text-purple-600 absolute left-3 top-1/2 -translate-y-1/2' />
+                                                <User className='w-5 h-5 text-purple-600 absolute left-3 top-1/2 -translate-y-1/2 group-hover:scale-110 transition-all' />
                                                 <Input
                                                     name={field}
                                                     value={formData[field]}
                                                     onChange={handleChange}
                                                     placeholder={field === 'name' ? 'Your Name' : "Friend's Name"}
-                                                    className={`pl-10 rounded-lg ${errors[field] ? 'border-red-500' : 'border-gray-200'}`}
+                                                    className={`pl-10 rounded-lg ${errors[field] ? 'border-red-500' : 'border-gray-200 group-hover:border-purple-600 transition-all'}`}
                                                 />
                                                 {errors[field] && (
                                                     <p className='text-red-500 text-sm mt-1'>{errors[field]}</p>
@@ -136,16 +156,16 @@ const Form = ({setFormOpen, formOpen }) => {
                                     transition={{ delay: 0.2 }}
                                     className='space-y-2'
                                 >
-                                    <Label className='text-gray-700 font-medium'>Friend's Email *</Label>
+                                    <Label className='text-gray-700 font-medium'>Friend's Email <span className='text-red-600'>*</span></Label>
                                     <div className='relative group'>
-                                        <Mail className='w-5 h-5 text-purple-600 absolute left-3 top-1/2 -translate-y-1/2' />
+                                        <Mail className='w-5 h-5 text-purple-600 absolute left-3 top-1/2 -translate-y-1/2 group-hover:scale-110 transition-all' />
                                         <Input
                                             name='friendEmail'
                                             type='email'
                                             value={formData.friendEmail}
                                             onChange={handleChange}
                                             placeholder="Friend's Email"
-                                            className={`pl-10 rounded-lg ${errors.friendEmail ? 'border-red-500' : 'border-gray-200'}`}
+                                            className={`pl-10 rounded-lg ${errors.friendEmail ? 'border-red-500' : 'border-gray-200 group-hover:border-purple-600 transition-all'}`}
                                         />
                                         {errors.friendEmail && (
                                             <p className='text-red-500 text-sm mt-1'>{errors.friendEmail}</p>
@@ -159,14 +179,14 @@ const Form = ({setFormOpen, formOpen }) => {
                                     transition={{ delay: 0.3 }}
                                     className='space-y-2'
                                 >
-                                    <Label className='text-gray-700 font-medium'>Message *</Label>
+                                    <Label className='text-gray-700 font-medium'>Message <span className='text-red-600'>*</span></Label>
                                     <Textarea
                                         name='message'
                                         value={formData.message}
                                         onChange={handleChange}
                                         placeholder='Write your message...'
                                         rows='4'
-                                        className={`rounded-lg ${errors.message ? 'border-red-500' : 'border-gray-200'}`}
+                                        className={`rounded-lg ${errors.message ? 'border-red-500' : 'border-gray-200 hover:border-purple-600 transition-all'}`}
                                     />
                                     {errors.message && (
                                         <p className='text-red-500 text-sm mt-1'>{errors.message}</p>
@@ -181,7 +201,7 @@ const Form = ({setFormOpen, formOpen }) => {
                                     <Button
                                         type='submit'
                                         disabled={isSubmitting}
-                                        className='w-full bg-gradient-to-r from-purple-600 to-blue-600 text-white py-6 rounded-xl font-semibold text-lg hover:shadow-lg transition-all flex items-center justify-center gap-2'
+                                        className='w-full bg-gradient-to-r from-purple-600 to-blue-600 text-white py-6 rounded-xl font-semibold text-lg hover:shadow-lg transition-all flex items-center justify-center gap-2 hover:scale-105'
                                     >
                                         {isSubmitting ? (
                                             <>
